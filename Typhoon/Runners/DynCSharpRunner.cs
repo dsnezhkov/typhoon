@@ -357,12 +357,13 @@ namespace Typhoon
         ///  - PreLaunch()
         ///  - RunCode()
         ///  - PostLaunch()
+        /// Note: Does not take referenced assemblies (yet)
         /// </summary>
         /// <param name="SourceCode"></param>
         /// <param name="TypeToRun"></param>
         /// <param name="isExe"></param>
         /// <returns></returns>
-        internal static bool CompileRunSource(string SourceCode, String TypeToRun, bool isExe)
+        internal static bool CompileRunXSource(string SourceCode, String TypeToRun)
         {
             Console.WriteLine("Type to run: {0}", TypeToRun);
             // What assembly we are in, do not include on load;
@@ -391,18 +392,9 @@ namespace Typhoon
                 CompilerParameters parameters = new CompilerParameters(
                     referencedAssemblies);
 
-                // for InstallUtil - netkatz
-                // parameters.ReferencedAssemblies.Add("System.Configuration.Install.dll");
-
                 parameters.GenerateInMemory = true;
-                if (isExe)
-                {
-                    parameters.GenerateExecutable = true;
-                }else
-                {
-                    parameters.GenerateExecutable = false;
+                parameters.GenerateExecutable = false;
 
-                }
                 parameters.TempFiles = new TempFileCollection(Path.GetTempPath(), true);
                 parameters.CompilerOptions = "/unsafe+";
                 String aPathName =
@@ -420,71 +412,127 @@ namespace Typhoon
                     return false;
                 }
 
-                if (!isExe)
+                var type = cr.CompiledAssembly.GetType(TypeToRun);
+
+                FileInfo fi = new FileInfo(aPathName);
+                File.Delete(aPathName);
+
+                object[] constructorArgs = new object[] { };
+                try
                 {
-                    var type = cr.CompiledAssembly.GetType(TypeToRun);
+                    dynamic instance = Activator.CreateInstance(type, constructorArgs);
+                    Console.WriteLine("\n--- Result ---");
+                    instance.PreLaunch(); // The pre method should always be this <-
+                    instance.RunCode();   // The method should always be this <-
+                    instance.PostLaunch(); // The post method should always be this <-
+                    instance = null;
 
-                    FileInfo fi = new FileInfo(aPathName);
-                    File.Delete(aPathName);
-
-                    object[] constructorArgs = new object[] { };
-                    try
-                    {
-                        dynamic instance = Activator.CreateInstance(type, constructorArgs);
-                        Console.WriteLine("\n--- Result ---");
-                        instance.PreLaunch(); // The pre method should always be this <-
-                        instance.RunCode();   // The method should always be this <-
-                        instance.PostLaunch(); // The post method should always be this <-
-                        instance = null;
-
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.Message);
-                    }
                 }
-                else
+                catch (Exception e)
                 {
-
-                    // EXE - no guarantees to memory exec of the wrapper.
-                    Console.WriteLine("Location {0}", aPathName);
-                    String exeName = String.Join(".", aPathName, "exe");
-                    Console.WriteLine("Location (EXE) {0}", exeName);
-                    try
-                    {
-
-                            File.Move(aPathName, exeName);
-                            ProcessStartInfo startInfo = new ProcessStartInfo(exeName);
-                            startInfo.WindowStyle = ProcessWindowStyle.Normal;
-                            startInfo.UseShellExecute = true;
-                            startInfo.CreateNoWindow = false;
-                            startInfo.WindowStyle = ProcessWindowStyle.Normal;
-                            Process exeProc = Process.Start(startInfo);
-
-                            //Process proc = Process.Start(aPathName);
-                            //proc.WaitForExit();
-                            //C:\Windows\Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe /logfile= /LogToConsole=false /U 
-                            /*ProcessStartInfo startInfo = new ProcessStartInfo(@"C:\Windows\Microsoft.NET\Framework\v4.0.30319\InstallUtil.exe");
-                            startInfo.Arguments = " /logfile= /LogToConsole=true /U " + "\"" +  aPathName + "\"";
-                            startInfo.UseShellExecute = false;
-                            startInfo.WindowStyle = ProcessWindowStyle.Normal;
-                            startInfo.LoadUserProfile = true;
-                            Process.Start(startInfo);*/
-
-                            //var inst = cr.CompiledAssembly.CreateInstance("PELoader.Sample");
-                            //MethodInfo mi = cr.CompiledAssembly.EntryPoint;
-                            //mi.Invoke(inst, null);
-                        }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
+                    Console.WriteLine(e.Message);
                 }
-               
+            }
+            return true;
+        }
+
+        internal static bool LoadAndRunType(string assemblyPath, String TypeToRun)
+        {
+
+            Console.WriteLine("Assembly to load: {0}", assemblyPath);
+            Console.WriteLine("Type to run: {0}", TypeToRun);
+
+            // Setup the path where we are looking for loaded Assembly dll. 
+            // We are looking in the folder where Typhoon is running from
+            var rootDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            Console.WriteLine("Rootdir: {0}", rootDir);
+            var setupInfo = new AppDomainSetup()
+            {
+                ApplicationBase = rootDir,
+                PrivateBinPath = rootDir
+            };
+
+            using (var context = AppDomainContext.Create(setupInfo))
+            {
+                context.LoadAssembly(LoadMethod.LoadFrom, assemblyPath);
+                String aName = Path.GetFileNameWithoutExtension(assemblyPath);
+
+                String[] assemblies = context.Domain.GetAssemblies().Select(a => a.FullName).ToArray();
+                Assembly assemblyToRun = context.Domain.GetAssemblies()
+                    .Where(a => a.FullName.StartsWith(aName, StringComparison.InvariantCultureIgnoreCase))
+                    .First();
+
+                var type = assemblyToRun.GetType(TypeToRun);
+                Console.WriteLine("Type {0}", type);
+
+                object[] constructorArgs = new object[] { };
+                try
+                {
+                    dynamic instance = Activator.CreateInstance(type, constructorArgs);
+                    Console.WriteLine("\n--- Result ---");
+                    instance.PreLaunch(); // The pre method should always be this <-
+                    instance.RunCode();   // The method should always be this <-
+                    instance.PostLaunch(); // The post method should always be this <-
+                    instance = null;
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
 
             }
+            return false;
+        }
 
-            return true;
+        internal static String CompileSource(string SourceCode, bool inmemory, bool isExe, string compoptions)
+        {
+            // What assembly we are in, do not include on load;
+            Assembly currentAssem = Assembly.GetExecutingAssembly();
+            String[] referencedAssemblies =
+                         AppDomain.CurrentDomain.GetAssemblies()
+                        .Where(a => !a.FullName.StartsWith("mscorlib", StringComparison.InvariantCultureIgnoreCase))
+                        .Where(a => !a.FullName.StartsWith(currentAssem.FullName, StringComparison.InvariantCultureIgnoreCase))
+                        .Where(a => !a.IsDynamic)
+                        .Select(a => a.Location)
+                        .ToArray();
+
+            Microsoft.CSharp.CSharpCodeProvider csc = new Microsoft.CSharp.CSharpCodeProvider(
+                new Dictionary<string, string>() { { "CompilerVersion", "v4.0" } });
+
+            CompilerParameters parameters = new CompilerParameters(
+                     referencedAssemblies);
+
+            if (inmemory) { 
+                parameters.GenerateInMemory = true;
+            } else {
+                parameters.GenerateInMemory = false;
+            }
+
+            if (isExe) {
+                parameters.GenerateExecutable = true;
+            } else {
+                parameters.GenerateExecutable = false;
+            }
+
+            parameters.TempFiles = new TempFileCollection(Path.GetTempPath(), true);
+            parameters.CompilerOptions = compoptions;
+            String aPathName =
+                    Path.Combine(Environment.CurrentDirectory, Path.GetFileName(Path.GetTempFileName()).Replace(".tmp", ".dll"));
+                parameters.OutputAssembly = aPathName;
+
+                CompilerResults cr = csc.CompileAssemblyFromSource(parameters, SourceCode);
+                if (cr.Errors.HasErrors)
+                {
+                    foreach (String output in cr.Output)
+                    {
+                        Console.WriteLine(output);
+                    }
+
+                    return String.Empty;
+                }
+
+            return aPathName;
         }
 
     }

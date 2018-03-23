@@ -15,6 +15,8 @@ namespace Typhoon
         private void ProcessCommand()
         {
 
+            Console.CancelKeyPress += ReplLineCancel;
+
             switch (type)
             {
                 case "multi":
@@ -95,13 +97,32 @@ namespace Typhoon
                     if (!DynCSharpRunner.CompileRunSnippet(directives, code))
                         Console.WriteLine("Errors in compilation...");
                     LookAndFeel.ResetColorConsole();
-                }else
+                }
+                else
                 {
                     return;
                 }
             }
+
+
+        }
+
+        protected static void ReplLineCancel(object sender, ConsoleCancelEventArgs args)
+        {
+
+            string specialKey = args.SpecialKey.ToString();
+            switch (specialKey)
+            {
+                case "ControlC":
+                    Console.WriteLine("To quit REPL type `QUIT`");
+                    // Set the Cancel property to true to prevent the process from terminating.
+                    args.Cancel = true;
+                    break;
+                default:
+                    break;
+            }
+
         }
 
     }
-
 }

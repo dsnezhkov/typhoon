@@ -39,6 +39,7 @@ namespace Typhoon
                             String resource = parameters.GetFirstValue("-resource");
                             String method = parameters.GetFirstValue("-method");
                             String klass = String.Empty;
+
                             switch (type.ToLower())
                             {
                                 case "python" :

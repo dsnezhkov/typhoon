@@ -60,12 +60,12 @@ namespace Typhoon
                             // when MMemoryLoader loads resource it might contain extension on the file, strip it when passing to TypeToRun
                             // Name of the MMRecord is the name of the TypeToRun minus extension. Name your extension file accordingly
                             // Example: If Memory File is WmiQuery.cs then TypeToRun is `WmiQuery`
-                            DynCSharpRunner.CompileRunSource(csCodeContent,
+                            DynCSharpRunner.CompileRunXSource(csCodeContent,
                                             String.Join(".", new String[2] {
                                                             "Typhoon.Extensions",
                                                              mmLocation.Replace(
                                                                  String.Concat(new String[] {".", mmr.ResourceType }),
-                                                                 String.Empty)}), false);
+                                                                 String.Empty)}));
                             break;
                         default:
                             Console.WriteLine("Unknown ResourceType {0}", mmr.ResourceType);

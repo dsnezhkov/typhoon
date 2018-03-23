@@ -61,7 +61,34 @@ namespace Typhoon
                     Console.WriteLine("TBD: Execution from Source File resource");
                     break;
                 case "lfile":
-                    Console.WriteLine("TBD: Execution from Assembly File resource");
+                    Console.WriteLine("Execution Extension from Assembly File resource");
+                    if (klass == String.Empty)
+                    {
+                        GeneralUtil.Usage("Need a Namespace.Class to run ");
+                        break;
+                    }
+                    // Local FS load
+                    if (File.Exists(resource))
+                    {
+                        try
+                        {
+                            csxCode = File.ReadAllText(resource);
+                            String compoptions = "/optimize";
+                            String assemblyPath = String.Empty;
+
+                            assemblyPath = DynCSharpRunner.CompileSource(csxCode, false, false, compoptions);
+                            DynCSharpRunner.LoadAndRunType(assemblyPath, klass);
+                        }
+                        catch (Exception fex)
+                        {
+                            GeneralUtil.Usage(fex.Message);
+                        }
+                    }
+                    else
+                    {
+                        GeneralUtil.Usage("Check file location: " + resource);
+                    }
+
                     break;
                 case "xfile":
                     Console.WriteLine("Execution from Extension File resource");
@@ -76,7 +103,7 @@ namespace Typhoon
                         try
                         {
                             csxCode = File.ReadAllText(resource);
-                            DynCSharpRunner.CompileRunSource(csxCode, klass, false);
+                            DynCSharpRunner.CompileRunXSource(csxCode, klass);
                         }
                         catch (Exception fex)
                         {
@@ -87,6 +114,7 @@ namespace Typhoon
                     {
                         GeneralUtil.Usage("Check file location: " + resource);
                     }
+
                     break;
                 default:
                     GeneralUtil.Usage("Unknown -method: " + method);

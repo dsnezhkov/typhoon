@@ -22,6 +22,8 @@ namespace Typhoon
         private void ProcessCommand()
         {
 
+            Console.CancelKeyPress += ReplLineCancel;
+
             switch (type)
             {
                 case "single":
@@ -41,17 +43,20 @@ namespace Typhoon
         private void replMulti()
         {
 
-            //String result = Console.ReadLine().Trim();
-
             bool replRunning = true;
-
             string replPrompt = ">>> ";
-            string replResult = "#import traceback; ";
+            string replResult = "#";
+
             while (replRunning)
             {
 
                 Console.Write("{0}", replPrompt);
                 string replLine = Console.ReadLine();
+
+                if (replLine == null)
+                {
+                    continue;
+                }
                 
                 // Imeddiately exit REPL
                 if (replLine.Equals("QUIT"))
@@ -59,18 +64,15 @@ namespace Typhoon
                     replRunning = false;
                     continue;
                 }
-                // 
+
                 if (replLine.Equals("END"))
                 {
                     Console.WriteLine("End input. Executing: {0}", replResult);
 
                     this.pythonScript = this.pengine.CreateScriptSourceFromString(replResult);
-                    //errors = ErrorListener();
-                    //pengine.Compile(pythonScript);
 
                     try
                     {
-                        Console.WriteLine(pythonScript);
                         pythonScript.Execute();
                     }
                     catch (Exception mse)
@@ -85,7 +87,7 @@ namespace Typhoon
                 {
                     replResult += Environment.NewLine;
                     replResult += replLine;
-                    replPrompt = "..> ";
+                    replPrompt = ">>> ";
                 }
             }
 
@@ -93,12 +95,17 @@ namespace Typhoon
         private void replSingle()
         {
             bool replRunning = true;
-
             string replPrompt = ">>> ";
+
             while (replRunning)
             {
                 Console.Write("{0}", replPrompt);
                 string replLine = Console.ReadLine();
+
+                if (replLine == null)
+                {
+                    continue;
+                }
                 // Imeddiately exit REPL
                 if (replLine.Equals("QUIT"))
                 {
@@ -108,9 +115,7 @@ namespace Typhoon
 
                 try
                 {
-
-                        this.pengine.Execute(replLine, this.pscope);
-
+                    this.pengine.Execute(replLine, this.pscope);
                 }
                 catch (Exception mse)
                 {
@@ -119,7 +124,22 @@ namespace Typhoon
             }
         }
 
+        protected static void ReplLineCancel(object sender, ConsoleCancelEventArgs args)
+        {
 
+            string specialKey= args.SpecialKey.ToString();
+            switch (specialKey)
+            {
+                case "ControlC":
+                    Console.WriteLine("To quit REPL type `QUIT`");
+                    // Set the Cancel property to true to prevent the process from terminating.
+                    args.Cancel = true;
+                    break;
+                default:
+                    break;
+            }
+
+        }
     }
 
 }

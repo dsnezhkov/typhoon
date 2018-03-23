@@ -43,6 +43,8 @@ namespace Typhoon
     // CSharp Code execution: Extension contract
     Typhoon.exe  -mode=exec -type=cs -method=xfile -resource=Extensions\WmiQuery.cs -class=Typhoon.Extensions.ClipboardManager
 
+    // CSharp Code Extension two-step execution: Compile into static dll and invoke
+    Typhoon.exe  -mode=exec -type=cs -method=lfile -resource=..\..\Examples\Extensions\clipboardManager.cs -class=Typhoon.Extensions.ClipboardManager
                 ";
             Console.WriteLine(usage);
             Console.WriteLine();

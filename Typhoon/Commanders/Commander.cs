@@ -277,9 +277,9 @@ namespace Typhoon
                  System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),HistoryFileName), 
                                 "._history");
             LookAndFeel.ResetColorConsole();
+
         }
 
-        // TODO: trap Ctrl-C 
         public void Do_exit(string arg)
         {
             Console.WriteLine(@"Exiting...");
@@ -304,6 +304,7 @@ Features:
 
 ");
         }
+
         #region PrePost
         public override void PostCmd(string line)
         {
@@ -327,5 +328,6 @@ Features:
         public override void PreLoop() { }
         public override void PostLoop() { }
         #endregion
+
     }
 }
