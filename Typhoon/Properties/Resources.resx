@@ -124,13 +124,13 @@
   <data name="IronPython_Modules" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\IronPython.Modules.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="Microsoft_CSharp" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Microsoft.CSharp.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="Microsoft_Dynamic" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Microsoft.Dynamic.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Microsoft_Scripting" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Microsoft.Scripting.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="StdLib" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\StdLib.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

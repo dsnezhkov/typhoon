@@ -7,6 +7,8 @@ using AppDomainToolkit;
 using System.Collections.Generic;
 using System.Threading;
 using System.Diagnostics;
+using Microsoft.CSharp.RuntimeBinder;
+using Typhoon.Utils;
 
 namespace Typhoon
 {
@@ -232,31 +234,35 @@ namespace Typhoon
         /// <returns></returns>
         internal static bool CompileRunSnippet(string SnippetDirectives, string SnippetCode)
         {
-            // What assembly we are in, do not include on load;
-            Assembly currentAssem = Assembly.GetExecutingAssembly();
-            String[] referencedAssemblies =
-                         AppDomain.CurrentDomain.GetAssemblies()
-                        .Where(a => !a.FullName.StartsWith("mscorlib", StringComparison.InvariantCultureIgnoreCase))
-                        .Where(a => !a.FullName.StartsWith(currentAssem.FullName, StringComparison.InvariantCultureIgnoreCase))
-                        .Where(a => !a.IsDynamic) //necessary because a dynamic assembly will throw and exception when calling a.Location
-                        .Select(a => a.Location)
-                        .ToArray();
 
-            if (ConfigUtil.DEBUG)
-            {
-                foreach (String ra in referencedAssemblies)
-                {
-                    Console.WriteLine("Including assembly: {0}", ra);
-                }
-            }
             using (var context = AppDomainContext.Create())
             {
+                // What assembly we are in, do not include on load;
+                Assembly currentAssem = Assembly.GetExecutingAssembly();
 
+                // We want to bring in Micrsosoft.CSharp dll for scripts that use dynamic constructs. 
+                // While the dll is         
+                CSharpUtil.LoadCSCompilNamespace();
+
+
+                String[] referencedAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+                    .Where( a => !a.IsDynamic)
+                    .Select(a => a.Location).ToArray();
+
+                if (!ConfigUtil.DEBUG)
+                {
+                    foreach (String ra in referencedAssemblies)
+                    {
+                        Console.WriteLine("Including assembly: {0}", ra);
+                    }
+                }
+
+                
                 // A Wrapper around the snippet, with proper object disposal
                 #region ScriptText
                 String SnippetPreamble = @"
                             namespace Dynamic {
-                              public class DynamicCompile: IDisposable{ 
+                              public class DynamicCompile: System.IDisposable{ 
 
                                 private bool disposed = false;
                                 public DynamicCompile(){
@@ -462,25 +468,38 @@ namespace Typhoon
                     .Where(a => a.FullName.StartsWith(aName, StringComparison.InvariantCultureIgnoreCase))
                     .First();
 
-                var type = assemblyToRun.GetType(TypeToRun);
-                Console.WriteLine("Type {0}", type);
-
-                object[] constructorArgs = new object[] { };
                 try
                 {
-                    dynamic instance = Activator.CreateInstance(type, constructorArgs);
-                    Console.WriteLine("\n--- Result ---");
-                    instance.PreLaunch(); // The pre method should always be this <-
-                    instance.RunCode();   // The method should always be this <-
-                    instance.PostLaunch(); // The post method should always be this <-
-                    instance = null;
+                    var type = assemblyToRun.GetType(TypeToRun);
 
+                    if (type != null)
+                    {
+                        object[] constructorArgs = new object[] { };
+                        try
+                        {
+                            dynamic instance = Activator.CreateInstance(type, constructorArgs);
+                            Console.WriteLine("\n--- Result ---");
+                            instance.PreLaunch(); // The pre method should always be this <-
+                            instance.RunCode();   // The method should always be this <-
+                            instance.PostLaunch(); // The post method should always be this <-
+                            instance = null;
+
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("Activator Exception: {0}", e.Message);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Check Type {0} ?", TypeToRun);
+                    }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
-                }
+                    Console.WriteLine("Assembly Get Type Exception: {0}", e.Message);
 
+                }
             }
             return false;
         }
@@ -489,6 +508,11 @@ namespace Typhoon
         {
             // What assembly we are in, do not include on load;
             Assembly currentAssem = Assembly.GetExecutingAssembly();
+
+            // We want to bring in Micrsosoft.CSharp dll for scripts that use dynamic constructs. 
+            // While the dll is         
+            CSharpUtil.LoadCSCompilNamespace();
+
             String[] referencedAssemblies =
                          AppDomain.CurrentDomain.GetAssemblies()
                         .Where(a => !a.FullName.StartsWith("mscorlib", StringComparison.InvariantCultureIgnoreCase))
@@ -496,6 +520,8 @@ namespace Typhoon
                         .Where(a => !a.IsDynamic)
                         .Select(a => a.Location)
                         .ToArray();
+
+            AssemblyUtil.showAssembliesInDomain(AppDomain.CurrentDomain);
 
             Microsoft.CSharp.CSharpCodeProvider csc = new Microsoft.CSharp.CSharpCodeProvider(
                 new Dictionary<string, string>() { { "CompilerVersion", "v4.0" } });

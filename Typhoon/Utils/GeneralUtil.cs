@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Typhoon
+namespace Typhoon.Utils
 {
     internal static class GeneralUtil
     {
@@ -14,37 +14,39 @@ namespace Typhoon
                    csrepl: 
                           -type=<multi|...>
                    pyrepl:
-                          -type=<single|multi>
+                          -type=<single := one line|multi := multi line>
                    exec:   
-                          -type=[py|cs] 
+                          -type=[py := python dlr|cs := c# extension contract source ] 
                             py:
-                              -method=<sfile>
+                              -method=<sfile := source file>
                             cs:
-                              -method=<sfile|xfile|lfile>
+                              -method=<sfile := source file |afile := assembly file>
 
-                          -resource=<resource_location>
+                          -resource=<resource_location := path to file>
                 ";
             const String examples = @"
 
     Examples:
 
-    // Console:
+        // Console:
     Typhoon.exe  -mode=console
 
-    // Python DLR REPL (multiline)
+        // Python DLR REPL (multiline)
     Typhoon.exe  -mode=csrepl -type=multi
 
-    // Python DLR REPL (one-liners)
+        // Python DLR REPL (one-liners)
     Typhoon.exe  -mode=pyrepl -type=single
 
-    // Python DLR Execute script
+        // Python DLR Execute script
     Typhoon.exe  -mode=exec -type=py -method=sfile -resource=.\test.py
 
-    // CSharp Code execution: Extension contract
+        // CSharp Code execution: Extension contract dynamic compilation and execution
     Typhoon.exe  -mode=exec -type=cs -method=xfile -resource=Extensions\WmiQuery.cs -class=Typhoon.Extensions.ClipboardManager
 
-    // CSharp Code Extension two-step execution: Compile into static dll and invoke
-    Typhoon.exe  -mode=exec -type=cs -method=lfile -resource=..\..\Examples\Extensions\clipboardManager.cs -class=Typhoon.Extensions.ClipboardManager
+        // CSharp Code Extension 1) compile into Assembly, 2) Load and execute
+    Typhoon.exe  -mode=comp -type=cs -resource=..\..\Examples\Extensions\ClipboardManager.cs
+    Typhoon.exe  -mode=exec -type=cs -method=afile -resource=.\tmp4E52.dll -class=Typhoon.Extensions.ClipboardManager
+
                 ";
             Console.WriteLine(usage);
             Console.WriteLine();

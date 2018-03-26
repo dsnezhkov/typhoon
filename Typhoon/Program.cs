@@ -1,4 +1,5 @@
 ﻿using System;
+using Typhoon.Utils;
 
 namespace Typhoon
 {
@@ -27,6 +28,33 @@ namespace Typhoon
                     case "c" :
                         OptionStarter.ModeConsole();
                         break;
+
+                    case "compile":
+                    case "comp":
+                        if (parameters.HasKeyAndValue("-type")
+                            && parameters.HasKeyAndValue("-resource")
+                            && parameters.GetFirstValue("-type") != String.Empty
+                            && parameters.GetFirstValue("-resource") != String.Empty)
+                        {
+                            String type = parameters.GetFirstValue("-type");
+                            String resource = parameters.GetFirstValue("-resource");
+                            switch (type.ToLower())
+                            {
+                                case "csharp":
+                                case "cs":
+                                    Console.WriteLine("Dynamic CS::Compile");
+                                    String assemblyPath = OptionStarter.ModeCSCompile(resource);
+                                    Console.WriteLine("Assembly compiled: {0}", assemblyPath);
+                                    break;
+                                default:
+                                    GeneralUtil.Usage("Unknown type of Compilation File: " + type);
+                                    break;
+                            }
+                        }else {
+                            GeneralUtil.Usage("Specify proper -type, -resource to get to the resource");
+                        }
+                        break;
+
                     case "exec":
                         if (parameters.HasKeyAndValue("-type") 
                             && parameters.HasKeyAndValue("-resource") 

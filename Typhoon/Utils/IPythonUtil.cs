@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Typhoon
+namespace Typhoon.Utils
 {
 
     internal static class IPythonUtil
@@ -37,7 +37,7 @@ namespace Typhoon
 
             // Load assemblies
             String[] assemblynames = new String[] {
-                "Microsoft.Dynamic", "Microsoft.Scripting",  "IronPython", "IronPython.Modules"
+                "Microsoft.Dynamic", "Microsoft.Scripting",  "IronPython", "IronPython.Modules", "DynamicLoad"
             };
             Dictionary<string, Assembly> LoadedAssemblies = new Dictionary<string, Assembly>();
             AssemblyUtil.LoadInitialCoreAssemblies(assemblynames, ref LoadedAssemblies);

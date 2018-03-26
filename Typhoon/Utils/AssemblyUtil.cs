@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Typhoon
+namespace Typhoon.Utils
 {
     static class AssemblyUtil
     {
@@ -81,6 +81,7 @@ namespace Typhoon
             }
 
             var resourceName = EmbeddedLibraries.FirstOrDefault(x => x.EndsWith(assemblyName));
+            Console.WriteLine("Embedded Resource name: {0}", resourceName );
             if (resourceName == null)
             {
                 return null;

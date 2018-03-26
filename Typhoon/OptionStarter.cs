@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Typhoon.Utils;
 
 namespace Typhoon
 {
@@ -43,6 +44,39 @@ namespace Typhoon
         }
 
         /// <summary>
+        /// Compiles CS Extension into Assembly given a resource file
+        /// TODO: compiler options
+        /// </summary>
+        /// <param name="resource"></param>
+        internal static string ModeCSCompile(String resource)
+        {
+            String csxCode = "";
+            Console.WriteLine("Compiling Extension fron File resource {0}", resource);
+            String assemblyPath = String.Empty; 
+
+            // Local FS load
+            if (File.Exists(resource))
+            {
+                try
+                {
+                    csxCode = File.ReadAllText(resource);
+                    String compoptions = "/optimize";
+
+                    assemblyPath = DynCSharpRunner.CompileSource(csxCode, false, false, compoptions);
+                }
+                catch (Exception fex)
+                {
+                    GeneralUtil.Usage(fex.Message);
+                }
+            }
+            else
+            {
+                GeneralUtil.Usage("Check file location: " + resource);
+            }
+            return assemblyPath;
+        }
+
+        /// <summary>
         /// Invoke CS extension script 
         /// </summary>
         internal static void ModeCSExec(String resource, String method, String klass)
@@ -54,30 +88,15 @@ namespace Typhoon
 
             switch (method.ToLower())
             {
-                case "mem":
-                    Console.WriteLine("TBD: Execution from Memory resource");
-                    break;
-                case "sfile":
-                    Console.WriteLine("TBD: Execution from Source File resource");
-                    break;
-                case "lfile":
-                    Console.WriteLine("Execution Extension from Assembly File resource");
-                    if (klass == String.Empty)
-                    {
-                        GeneralUtil.Usage("Need a Namespace.Class to run ");
-                        break;
-                    }
+                case "afile":
+                    Console.WriteLine("Execution of Extension from Assembly. Load and execute.");
                     // Local FS load
                     if (File.Exists(resource))
                     {
                         try
                         {
-                            csxCode = File.ReadAllText(resource);
-                            String compoptions = "/optimize";
-                            String assemblyPath = String.Empty;
-
-                            assemblyPath = DynCSharpRunner.CompileSource(csxCode, false, false, compoptions);
-                            DynCSharpRunner.LoadAndRunType(assemblyPath, klass);
+                            Console.WriteLine("Before LoadAndRun"); 
+                            DynCSharpRunner.LoadAndRunType(resource, klass);
                         }
                         catch (Exception fex)
                         {
@@ -90,8 +109,8 @@ namespace Typhoon
                     }
 
                     break;
-                case "xfile":
-                    Console.WriteLine("Execution from Extension File resource");
+                case "sfile":
+                    Console.WriteLine("Execution of Extension Source File. Compile and execute on the fly");
 
                     if (klass == String.Empty) { 
                         GeneralUtil.Usage("Need a Namespace.Class to run ");

@@ -7,7 +7,7 @@
     <ProjectGuid>{C9C7DBE9-DC1A-4D00-A6E3-456DF2B944F8}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Cradle</RootNamespace>
+    <RootNamespace>Typhoon</RootNamespace>
     <AssemblyName>Typhoon</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -50,21 +50,28 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>Typhoon.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>cloudservice.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="IronPython">
-      <HintPath>..\..\DynCode\packages\IronPython.2.7.7\lib\Net45\IronPython.dll</HintPath>
+    <Reference Include="IronPython, Version=2.7.7.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Resources\IronPython.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="IronPython.Modules">
-      <HintPath>..\..\DynCode\packages\IronPython.2.7.7\lib\Net45\IronPython.Modules.dll</HintPath>
+      <HintPath>Resources\IronPython.Modules.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Dynamic">
-      <HintPath>..\..\..\..\..\Tools\Code\Microsoft.Dynamic.dll</HintPath>
+      <HintPath>Resources\Microsoft.Dynamic.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Scripting">
-      <HintPath>..\..\..\..\..\Tools\Code\Microsoft.Scripting.dll</HintPath>
+      <HintPath>Resources\Microsoft.Scripting.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -98,10 +105,6 @@
     <Compile Include="Utils\AssemblyUtil.cs" />
     <Compile Include="ThirdParty\CommandLineParser\BareParametersParser.cs" />
     <Compile Include="ThirdParty\CommandLineParser\CharContext.cs" />
-    <Compile Include="Examples\CommandSerializer\CommandMessage.cs" />
-    <Compile Include="Examples\CommandSerializer\CommandMessageReader.cs" />
-    <Compile Include="Examples\CommandSerializer\CommandMessageWriter.cs" />
-    <Compile Include="Examples\DynamicDllImport.cs" />
     <Compile Include="Runners\DynCSharpRunner.cs" />
     <Compile Include="Examples\Extensions\WmiQuery.cs" />
     <Compile Include="Examples\Extensions\ClipboardManager.cs" />
@@ -126,6 +129,7 @@
     <Compile Include="Commanders\LoadCommander.cs" />
     <Compile Include="Commanders\Commander.cs" />
     <Compile Include="Utils\ConfigUtil.cs" />
+    <Compile Include="Utils\CSharpUtil.cs" />
     <Compile Include="Utils\IPythonUtil.cs" />
     <Compile Include="LookAndFeel.cs" />
     <Compile Include="Program.cs" />
@@ -143,21 +147,10 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\IronPython.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\Microsoft.Dynamic.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\Microsoft.Scripting.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\IronPython.Modules.dll" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
@@ -173,6 +166,24 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Examples\Netmodules\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Microsoft.Dynamic.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Microsoft.Scripting.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\IronPython.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\IronPython.Modules.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Microsoft.CSharp.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="cloudservice.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

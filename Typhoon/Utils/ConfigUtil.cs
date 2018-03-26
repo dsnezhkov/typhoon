@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Typhoon
+namespace Typhoon.Utils
 {
     internal static class ConfigUtil
     {

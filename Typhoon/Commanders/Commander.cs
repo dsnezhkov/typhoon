@@ -3,6 +3,7 @@
 // Using python cmd inspired library from @adamadair to drive prompts (https://github.com/adamadair/NCmd)
 using NCmd;
 using System.Diagnostics;
+using Typhoon.Utils;
 
 namespace Typhoon
 {

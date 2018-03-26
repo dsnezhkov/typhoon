@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2015
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Typhoon", "Typhoon\Typhoon.csproj", "{C9C7DBE9-DC1A-4D00-A6E3-456DF2B944F8}"
 EndProject
@@ -13,6 +13,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MStore", "MStore\MStore.csproj", "{52C2C9DD-44F5-4EB3-A061-093A3C8CB9E3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netmodules", "Netmodules\Netmodules.csproj", "{3AFF33DA-9114-4D39-ACBD-B384D4816887}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicLoad", "DynamicLoad\DynamicLoad.csproj", "{682887A0-29D0-4CA2-8A6F-5BCD82ABA204}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,8 +34,15 @@ Global
 		{3AFF33DA-9114-4D39-ACBD-B384D4816887}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AFF33DA-9114-4D39-ACBD-B384D4816887}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AFF33DA-9114-4D39-ACBD-B384D4816887}.Release|Any CPU.Build.0 = Release|Any CPU
+		{682887A0-29D0-4CA2-8A6F-5BCD82ABA204}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{682887A0-29D0-4CA2-8A6F-5BCD82ABA204}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{682887A0-29D0-4CA2-8A6F-5BCD82ABA204}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{682887A0-29D0-4CA2-8A6F-5BCD82ABA204}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F18A1CF5-C461-485D-B41F-AA58C61A5EBA}
 	EndGlobalSection
 EndGlobal
