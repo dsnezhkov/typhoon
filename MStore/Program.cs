@@ -26,9 +26,9 @@ namespace MStore
             Thread thread = new Thread(new ThreadStart(KeepAlive));
             thread.Start();
 
-            //Thread.Sleep(10000);
+            Thread.Sleep(10000);
 
-            //shouldStop = true;
+            shouldStop = true;
 
             Environment.Exit(5);
 

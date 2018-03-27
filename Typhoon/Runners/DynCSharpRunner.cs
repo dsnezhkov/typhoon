@@ -240,14 +240,21 @@ namespace Typhoon
                 // What assembly we are in, do not include on load;
                 Assembly currentAssem = Assembly.GetExecutingAssembly();
 
+                String[] referencedAssemblies =
+                             AppDomain.CurrentDomain.GetAssemblies()
+                            .Where(a => !a.FullName.StartsWith(currentAssem.FullName, StringComparison.InvariantCultureIgnoreCase))
+                            .Where(a => !a.IsDynamic) //is necessary because a dynamic assembly will throw and exception when calling a.Location
+                            .Select(a => a.Location)
+                            .ToArray();
+
                 // We want to bring in Micrsosoft.CSharp dll for scripts that use dynamic constructs. 
                 // While the dll is         
                 CSharpUtil.LoadCSCompilNamespace();
 
 
-                String[] referencedAssemblies = AppDomain.CurrentDomain.GetAssemblies()
-                    .Where( a => !a.IsDynamic)
-                    .Select(a => a.Location).ToArray();
+                //String[] referencedAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+                //    .Where( a => !a.IsDynamic)
+                //    .Select(a => a.Location).ToArray();
 
                 if (!ConfigUtil.DEBUG)
                 {

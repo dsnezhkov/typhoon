@@ -43,7 +43,7 @@ namespace Typhoon
                 String directives = String.Empty;
                 String code = String.Empty;
 
-                LookAndFeel.ResetColorConsole();
+                LookAndFeel.ResetColorConsole(true);
                 LookAndFeel.SetColorConsole(ConsoleColor.Yellow, ConsoleColor.Black);
 
                 while (replRunning)
@@ -97,7 +97,7 @@ namespace Typhoon
                     Console.WriteLine("Perforing dynamic compile and execution.");
                     if (!DynCSharpRunner.CompileRunSnippet(directives, code))
                         Console.WriteLine("Errors in compilation...");
-                    LookAndFeel.ResetColorConsole();
+                    LookAndFeel.ResetColorConsole(true);
                 }
                 else
                 {

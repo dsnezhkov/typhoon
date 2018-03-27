@@ -85,6 +85,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Examples\Extensions\Scratch.cs" />
     <Compile Include="ThirdParty\AppDomainToolkit\AppDomainContext.cs" />
     <Compile Include="ThirdParty\AppDomainToolkit\AssemblyLoader.cs" />
     <Compile Include="ThirdParty\AppDomainToolkit\AssemblyTarget.cs" />

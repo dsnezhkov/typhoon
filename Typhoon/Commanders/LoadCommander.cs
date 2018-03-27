@@ -144,7 +144,7 @@ namespace Typhoon
 
         public LoadCommander()
         {
-            LookAndFeel.ResetColorConsole();
+            LookAndFeel.ResetColorConsole(true);
             // Intro is the text that gets displayed when the (sub-)shell starts. 
             Intro = "Loader for resources\n========================\n\n";
 
@@ -162,7 +162,7 @@ namespace Typhoon
         public override void PostCmd(string line)
         {
             base.PostCmd(line);
-            LookAndFeel.ResetColorConsole();
+            LookAndFeel.ResetColorConsole(true);
         }
         public override string PreCmd(string line)
         {

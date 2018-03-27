@@ -12,16 +12,25 @@ namespace Typhoon
             Console.Clear();
         }
 
-        internal static void SetColorConsole(ConsoleColor fg, ConsoleColor bg)
+        internal static void SetColorConsole(ConsoleColor fg, ConsoleColor? bg = null)
         {
             Console.ForegroundColor = fg;
-            Console.BackgroundColor = bg;
+            Console.BackgroundColor = bg.GetValueOrDefault(Console.BackgroundColor);
         }
 
-        internal static void ResetColorConsole()
+        internal static void ResetColorConsole(bool dark)
         {
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.BackgroundColor = ConsoleColor.Black;
+            if (dark)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.BackgroundColor = ConsoleColor.Black;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Black;
+                Console.BackgroundColor = ConsoleColor.White;
+
+            }
         }
 
     }

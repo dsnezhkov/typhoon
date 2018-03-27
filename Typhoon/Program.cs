@@ -67,13 +67,17 @@ namespace Typhoon
                             String resource = parameters.GetFirstValue("-resource");
                             String method = parameters.GetFirstValue("-method");
                             String klass = String.Empty;
+                            String targs = String.Empty;
 
                             switch (type.ToLower())
                             {
                                 case "python" :
                                 case "py" :
                                     Console.WriteLine("Python DLR");
-                                    OptionStarter.ModePyExec(resource, method);
+                                    if (parameters.HasKeyAndValue("-targs")){
+                                        targs = parameters.GetFirstValue("-targs");
+                                    }
+                                    OptionStarter.ModePyExec(resource, method, targs);
                                     break;
                                 case "csharp" :
                                 case "cs" :

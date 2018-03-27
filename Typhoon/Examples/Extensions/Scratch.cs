@@ -12,12 +12,12 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Typhoon
+namespace Typhoon.Extensions
 {
-    class Scratch
+    public class Scratch
     {
         [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool LogonUser(
+        private static extern bool LogonUser(
                   string lpszUsername,
                   string lpszDomain,
                   IntPtr lpPassword,
@@ -30,10 +30,10 @@ namespace Typhoon
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         [SuppressUnmanagedCodeSecurity]
         [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool CloseHandle(IntPtr hObject);
+        private static extern bool CloseHandle(IntPtr hObject);
 
         [DllImport("advapi32.dll", SetLastError = true)]
-        static extern bool GetTokenInformation(
+        private static extern bool GetTokenInformation(
             IntPtr TokenHandle,
             TOKEN_INFORMATION_CLASS TokenInformationClass,
             IntPtr TokenInformation,
@@ -60,7 +60,7 @@ namespace Typhoon
                 TokenOrigin
                 };
 
-        private static void GetNTAcctForPath(String path)
+        private  void GetNTAcctForPath(String path)
         {
             FileSecurity fs = File.GetAccessControl(path);
             AuthorizationRuleCollection ntarc = fs.GetAccessRules(true, true, typeof(NTAccount));
@@ -97,12 +97,7 @@ namespace Typhoon
             }
         }
 
-        private static void Showtoken()
-        {
-            
-        }
-
-    public static void Main()
+        private void Main()
         {
             //GetNTAcctForPath(@"Scratch.exe");
             // bool currentDomain = true; // true  - domain , false - local
@@ -113,9 +108,14 @@ namespace Typhoon
             //ImpersonateUser("Administrator", null);
         }
 
-        
+        public void PreLaunch() { GetWellKnownSid(true); }
+        public void PostLaunch() {}
 
-        private static void ImpersonateUser(String userName, String domainName)
+        // Implementing Entry point contract
+        public void  RunCode(){
+		    Main();
+	    }
+        private void ImpersonateUser(String userName, String domainName)
         {
             if (domainName == null)
             {
@@ -190,7 +190,7 @@ namespace Typhoon
             }
         }
 
-        private static void GetWellKnownSid(bool domain)
+        private void GetWellKnownSid(bool domain)
         {
             SecurityIdentifier currDomain = null;
             if (domain)
@@ -216,7 +216,6 @@ namespace Typhoon
                                 (sid.IsValidTargetType(typeof(NTAccount)) ? sid.Translate(typeof(NTAccount)).ToString() : "-"),
                                 sid.Value
                             );
-
                     }
                     catch (Exception e)
                     {
@@ -235,4 +234,3 @@ namespace Typhoon
         }
     }
 }
-

@@ -146,7 +146,7 @@ namespace Typhoon
         /// </summary>
         /// <param name="resource"></param>
         /// <param name="method"></param>
-        internal static void ModePyExec(String resource, String method)
+        internal static void ModePyExec(String resource, String method, String targs)
         {
             String pyCode = "";
 
@@ -191,6 +191,7 @@ namespace Typhoon
                 }
 
                 dynamic pythonScript = IPythonUtil.GetPyEngine().CreateScriptSourceFromString(pyCode);
+                pscope.SetVariable("targs", targs);
                 pythonScript.Execute(pscope);
             }
             catch (Exception ae)

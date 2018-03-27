@@ -21,6 +21,7 @@ namespace Typhoon
 
             assemblyList.AddRange(staticAllLoads);
 
+            // Only load those that can be found
             foreach (String dllFile in dynamicAllLoads)
             {
                 if (File.Exists(String.Join(".", dllFile,"dll")))

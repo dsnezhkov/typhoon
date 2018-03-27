@@ -277,7 +277,7 @@ namespace Typhoon
             Console.WriteLine("WARNING: Command History is on disk at : {0}{1}",
                  System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),HistoryFileName), 
                                 "._history");
-            LookAndFeel.ResetColorConsole();
+            LookAndFeel.ResetColorConsole(true);
 
         }
 
@@ -310,7 +310,7 @@ Features:
         public override void PostCmd(string line)
         {
             base.PostCmd(line);
-            LookAndFeel.ResetColorConsole();
+            LookAndFeel.ResetColorConsole(true);
         }
         public override string PreCmd(string line)
         {
