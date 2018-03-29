@@ -38,20 +38,27 @@ namespace Typhoon.MStore
                 server.WaitForConnection();
                 Console.WriteLine("Connection established.");
 
-                using (StreamWriter sw = new StreamWriter(server))
-                {
                     while (true)
                     {
 
                         MemoryStream ms = new MemoryStream();
                         try
                         {
-                            byte[] buffer = new byte[0x1000];
-                            do {
-                                ms.Write(buffer, 0, server.Read(buffer, 0, buffer.Length));
-                            }while (!server.IsMessageComplete);
+                            byte[] buffer = new byte[1024];
+                            var sb = new StringBuilder();
+                            int read;
 
-                        }catch (IOException sio){
+                            while ((read = server.Read(buffer, 0, buffer.Length)) > 0 && 
+                                        !server.IsMessageComplete) {
+                                CommandSerializers.WriteYellow("Server received length {0}\n", read);
+                                sb.Append(Encoding.ASCII.GetString(buffer, 0, read));
+                            }
+
+                            using (var writer = new StreamWriter(ms))
+                            {
+                                writer.Write(sb);
+                            }
+                        } catch (IOException sio){
                             Console.WriteLine("Receive: IO exception {0}", sio.Message);
                         }
 
@@ -65,20 +72,23 @@ namespace Typhoon.MStore
                             sm.meta = "Q";
                         }
 
+                        sm.data = "Some data";
+                        sm.data = null;
                         String sms = CommandSerializers.Serialize(sm);
+
+                        var smsBytes = Encoding.ASCII.GetBytes(sms);
                         CommandSerializers.WriteYellow("Server sends RESPONSE: Serialized as: {0}\n", sms);
 
                         try
                         {
-                            sw.WriteLine(sms);
-                            sw.Flush();
+                            server.Write(smsBytes, 0, smsBytes.Length);
+                            server.Flush();
                         }catch (IOException sio){
                             Console.WriteLine("Receive: IO exception {0}", sio.Message);
                         }
 
                         Thread.Sleep(1000); // TODO: tune
                     }
-                }
             }
         }
 

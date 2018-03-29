@@ -41,44 +41,44 @@ namespace Typhoon.MStore
                 client.ReadMode = PipeTransmissionMode.Message;
                 Console.WriteLine("Connected.");
 
-                using (StreamWriter sw = new StreamWriter(client))
+                while (true)
                 {
-                    while (true)
+
+                    Byte[] randbytes = File.ReadAllBytes(@".\MStore.pdb");
+
+                    CommandMessage cm = new CommandMessage { meta = "Q", data = "Data", blob = randbytes };
+                    String cms = CommandSerializers.Serialize(cm);
+                    var cmsBytes = Encoding.ASCII.GetBytes(cms);
+                    CommandSerializers.WriteGreen(
+                        "Client sends REQUEST of ({0}: Serialized as: {1}\n", cmsBytes.Length, cms);
+                    try
                     {
-                        CommandMessage cm = new CommandMessage { meta = "Q", data = "Data" };
-                        String cms = CommandSerializers.Serialize(cm);
-                        CommandSerializers.WriteGreen("Client sends REQUEST: Serialized as: {0}\n", cms);
-                        try
-                        {
-                            sw.WriteLine(cms);
-                            sw.Flush();
-                        }catch(IOException sio)
-                        {
-                            Console.WriteLine("Send: IO exception {0}", sio.Message);
-                        }
+                        client.Write(cmsBytes, 0, cms.Length);
+                        client.Flush();
+                    }catch(IOException sio)
+                    {
+                        Console.WriteLine("Send: IO exception {0}", sio.Message);
+                    }
 
-                        try
+                    try
+                    {
+                        MemoryStream ms = new MemoryStream();
+                        byte[] buffer = new byte[1024];
+                        do
                         {
-                            MemoryStream ms = new MemoryStream();
-                            byte[] buffer = new byte[0x1000];
-                            do
-                            {
-                                ms.Write(buffer, 0, client.Read(buffer, 0, buffer.Length));
-                            } while (!client.IsMessageComplete);
+                            ms.Write(buffer, 0, client.Read(buffer, 0, buffer.Length));
+                        } while (!client.IsMessageComplete);
 
-                            string stringData = Encoding.UTF8.GetString(ms.ToArray());
-                            CommandSerializers.WriteGreen("Client received RESPONSE: De-Serialized as: {0}\n", stringData);
-                            ProcessCommandC(stringData);
+                        string stringData = Encoding.UTF8.GetString(ms.ToArray());
+                        CommandSerializers.WriteGreen("Client received RESPONSE: De-Serialized as: {0}\n", stringData);
+                        ProcessCommandC(stringData);
 
-                        }catch(IOException sio)
-                        {
-                            Console.WriteLine("Receive: IO exception {0}", sio.Message);
-                        }
-
+                    }catch(IOException sio)
+                    {
+                        Console.WriteLine("Receive: IO exception {0}", sio.Message);
                     }
                 }
             }
         }
-
     }
 }
