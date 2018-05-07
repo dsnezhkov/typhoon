@@ -41,6 +41,9 @@ namespace Typhoon.MStore
                     while (true)
                     {
 
+                        // TODO: We can leave Memory streams with data, as we could:
+                        // - write memory stream to MemoryMappedIO non-file backed store and share over IPC
+                        // - convert to something else
                         MemoryStream ms = new MemoryStream();
                         try
                         {
