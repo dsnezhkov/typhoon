@@ -1,3 +1,6 @@
+#
+# This example shows how a remote DLL can be loaded. Also, how DynamicDLL can be loaded by Typhoon
+#
 import clr
 
 clr.AddReference("System")

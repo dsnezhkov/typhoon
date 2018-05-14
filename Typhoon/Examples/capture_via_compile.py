@@ -1,3 +1,9 @@
+#
+# This example showcases dynamic compilation of managed ode with native interop, and then using the generated assembly 
+# in PyDLR to invoke managed code
+# PyDLR -> .Net -> (Interop) -> unmanaged
+#
+
 import clr
 
 from System.Environment import CurrentDirectory
